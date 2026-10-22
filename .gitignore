@@ -4,6 +4,7 @@
 .pytest_cache/
 .coverage
 htmlcov/
+.vercel/
 frontend/node_modules/
 frontend/dist/
 frontend/.env*
@@ -15,14 +16,17 @@ data/synthetic/*
 data/processed/*
 !data/processed/.gitkeep
 !data/processed/data_quality.json
+!data/processed/port_daily.csv
 data/manifests/*
 !data/manifests/.gitkeep
 !data/manifests/provenance.json
 artifacts/models/*
 !artifacts/models/.gitkeep
+!artifacts/models/*.joblib
 artifacts/metrics/*
 !artifacts/metrics/.gitkeep
 !artifacts/metrics/evaluation.json
+!artifacts/metrics/delay_evaluation.json
 reports/*
 !reports/.gitkeep
 !reports/technical_report.pdf

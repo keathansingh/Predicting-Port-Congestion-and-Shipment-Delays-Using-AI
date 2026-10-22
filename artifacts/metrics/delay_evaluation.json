@@ -1,0 +1,70 @@
+{
+  "available": true,
+  "model": "balanced_logistic_regression",
+  "target": "SyntheticDelayLabel",
+  "target_definition": "SyntheticDelayLabel aggregated by UTC target day using max; operational features are measured on the preceding UTC day.",
+  "probability_calibration": "uncalibrated",
+  "probability_calibration_note": "Probabilities are uncalibrated estimates from a class-weighted classifier; they are not model confidence.",
+  "dataset_identity": {
+    "data_status": "synthetic",
+    "source_name": "Seeded synthetic AIS-like development data",
+    "filename": "ais_development.csv",
+    "sha256": "f43b114db13970283d41c1de13bbf2a655b4208f1525dddc6a76119f0039cd1d"
+  },
+  "target_distribution": {
+    "not_delayed": 277,
+    "delayed": 453
+  },
+  "features": [
+    "vessel_arrivals_daily",
+    "queue_length_vessels",
+    "port_capacity_berths",
+    "wind_speed_kmh",
+    "day_of_week",
+    "month",
+    "weather_condition"
+  ],
+  "split_strategy": "chronological holdout; earliest 80% train, latest 20% final test",
+  "train": {
+    "sample_count": 584,
+    "period": {
+      "start": "2023-01-02",
+      "end": "2024-08-07"
+    },
+    "class_distribution": {
+      "not_delayed": 216,
+      "delayed": 368
+    }
+  },
+  "test": {
+    "sample_count": 146,
+    "period": {
+      "start": "2024-08-08",
+      "end": "2024-12-31"
+    },
+    "class_distribution": {
+      "not_delayed": 61,
+      "delayed": 85
+    },
+    "precision": 0.7727272727272727,
+    "recall": 0.4,
+    "f1": 0.5271317829457365,
+    "roc_auc": 0.6948891031822565,
+    "brier_score": 0.24130125897774868,
+    "log_loss": 0.6735151611737719,
+    "confusion_matrix": [
+      [
+        51,
+        10
+      ],
+      [
+        51,
+        34
+      ]
+    ]
+  },
+  "duration_regression": {
+    "available": false,
+    "reason": "No independently validated duration model is implemented."
+  }
+}

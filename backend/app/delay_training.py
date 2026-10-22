@@ -1,4 +1,5 @@
 import json
+import os
 import pickle
 import shutil
 from pathlib import Path
@@ -319,6 +320,13 @@ def load_delay_model() -> dict[str, Any]:
             and cached.get("training_dataset", {}).get("sha256") == provenance.get("sha256")
         ):
             return cached
+
+    if os.getenv("VERCEL") == "1":
+        return _unavailable(
+            "The active dataset differs from the bundled shipment-delay model. "
+            "Retrain and redeploy the model artifact for this dataset.",
+            provenance,
+        )
 
     bundle, metrics = train_delay_model(frame, provenance)
     if bundle["status"] == "available":

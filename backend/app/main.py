@@ -8,10 +8,12 @@ from app.routes.api import router
 from app.schemas import HealthResponse
 from app.services.runtime import load_bundle, load_daily
 from app.delay_training import load_delay_model
+from app.services.vercel_dataset_storage import configure_serverless_dataset_storage
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_serverless_dataset_storage()
     app.state.model_bundle = load_bundle()
     app.state.delay_model_bundle = load_delay_model()
     app.state.data_available = load_daily() is not None
@@ -44,6 +46,7 @@ async def prevent_api_caching(request, call_next):
 app.include_router(router)
 
 
+@app.get("/api/health", response_model=HealthResponse, include_in_schema=False)
 @app.get("/health", response_model=HealthResponse)
 def health():
     delay_bundle = getattr(app.state, "delay_model_bundle", None)

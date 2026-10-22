@@ -16,9 +16,10 @@ import {
 import type { DashboardSummary, HistoryRow } from './dashboardData.mjs'
 import './App.css'
 
-const API = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000'
+const API = import.meta.env.VITE_API_BASE_URL
+  ?? (import.meta.env.DEV ? 'http://127.0.0.1:8000' : '')
 const PORT_ID = 'port-of-los-angeles'
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+const MAX_UPLOAD_BYTES = import.meta.env.PROD ? 4 * 1024 * 1024 : 25 * 1024 * 1024
 type Page = 'overview' | 'port' | 'predict' | 'delay' | 'performance' | 'methodology' | 'dataset'
 type DatePeriod = '1m' | '6m' | '1y' | '2y' | '3y' | 'custom'
 type Summary = DashboardSummary
@@ -635,7 +636,7 @@ function DatasetManager({ active, metadata, onUploaded }: {
         <div className="required-columns"><strong>Required AIS columns</strong><span>MMSI · BaseDateTime · LAT · LON · SOG</span><small>Use nine-digit MMSI identifiers, parseable timestamps, numeric latitude/longitude and 0–102.3 knot speed values. Raw AIS messages only; processed features or shipment-delay labels are not accepted.</small></div>
         <label className={`drop-zone ${dragging ? 'drop-zone-active' : ''}`} onDragOver={(event) => { event.preventDefault(); setDragging(true) }} onDragLeave={() => setDragging(false)} onDrop={dropFile}>
           <input type="file" accept=".csv,text/csv" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) void inspectFile(selected); event.currentTarget.value = '' }} />
-          <CloudUpload size={27} /><strong>{file ? file.name : 'Drop a CSV file here'}</strong><span>{file ? formatBytes(file.size) : 'or browse your device · maximum 25 MiB'}</span>
+          <CloudUpload size={27} /><strong>{file ? file.name : 'Drop a CSV file here'}</strong><span>{file ? formatBytes(file.size) : `or browse your device · maximum ${formatBytes(MAX_UPLOAD_BYTES)}`}</span>
           <span className="secondary-button">Choose CSV</span>
         </label>
         <label className="input-field source-input"><span>Dataset source name <small>optional</small></span><input type="text" maxLength={120} value={sourceName} onChange={(event) => setSourceName(event.target.value)} placeholder="e.g. AIS archive, collection date" /></label>

@@ -27,8 +27,9 @@ from app.data_pipeline import (
     build_delay_dataset,
     build_unlabeled_daily_dataset,
 )
+from app.services.vercel_dataset_storage import persist_dataset_snapshot
 
-MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+MAX_UPLOAD_BYTES = 4 * 1024 * 1024 if os.getenv("VERCEL") == "1" else 25 * 1024 * 1024
 MAX_UPLOAD_ROWS = 250_000
 PREVIEW_ROW_COUNT = 10
 _UPLOAD_LOCK = DATASET_LOCK
@@ -439,6 +440,12 @@ def process_upload(
         quality_path.write_text(json.dumps(quality, indent=2), encoding="utf-8")
         provenance_path.write_text(json.dumps(provenance, indent=2), encoding="utf-8")
         raw_path.write_bytes(contents)
+        persist_dataset_snapshot(
+            daily_path,
+            quality_path,
+            provenance_path,
+            raw_path,
+        )
         _replace_dataset_files(
             {
                 raw_path: upload_path,

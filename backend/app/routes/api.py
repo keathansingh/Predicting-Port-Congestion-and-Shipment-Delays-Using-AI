@@ -29,6 +29,7 @@ from app.services.datasets import (
     inspect_csv,
     process_upload,
 )
+from app.services.vercel_dataset_storage import DatasetStorageError
 from app.services import datasets
 
 router = APIRouter(prefix="/api/v1")
@@ -342,6 +343,8 @@ async def upload_dataset(
             result = process_upload(contents, file.filename or "", source_name)
         except DatasetValidationError as error:
             raise _validation_error(error) from error
+        except DatasetStorageError as error:
+            raise HTTPException(status_code=503, detail=str(error)) from error
         except (OSError, pd.errors.ParserError, ValueError) as error:
             raise HTTPException(
                 status_code=500,

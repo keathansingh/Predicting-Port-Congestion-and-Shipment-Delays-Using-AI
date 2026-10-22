@@ -106,6 +106,47 @@ def test_missing_delay_labels_and_unreadable_artifact_return_unavailable(
     assert metrics_path.read_text(encoding="utf-8") == '{"previous":"evaluation"}'
 
 
+def test_vercel_does_not_train_or_overwrite_artifacts_for_a_mismatched_dataset(
+    monkeypatch, tmp_path
+):
+    processed = tmp_path / "port_daily.csv"
+    provenance_path = tmp_path / "provenance.json"
+    model_path = tmp_path / "delay_model.joblib"
+    metrics_path = tmp_path / "delay_evaluation.json"
+    labeled_daily_data().to_csv(processed, index=False)
+    provenance_path.write_text(
+        json.dumps(
+            {
+                "data_status": "synthetic",
+                "source_name": "synthetic Vercel fixture",
+                "sha256": "active-dataset-hash",
+            }
+        ),
+        encoding="utf-8",
+    )
+    delay_training.joblib.dump(
+        {
+            "artifact_version": delay_training.DELAY_ARTIFACT_VERSION,
+            "training_dataset": {"sha256": "bundled-dataset-hash"},
+        },
+        model_path,
+    )
+    metrics_path.write_text('{"previous":"evaluation"}', encoding="utf-8")
+    original_model = model_path.read_bytes()
+    monkeypatch.setattr(delay_training, "PROCESSED_PATH", processed)
+    monkeypatch.setattr(delay_training, "PROVENANCE_PATH", provenance_path)
+    monkeypatch.setattr(delay_training, "DELAY_MODEL_PATH", model_path)
+    monkeypatch.setattr(delay_training, "DELAY_METRICS_PATH", metrics_path)
+    monkeypatch.setenv("VERCEL", "1")
+
+    bundle = delay_training.load_delay_model()
+
+    assert bundle["status"] == "unavailable"
+    assert "differs from the bundled" in bundle["reason"]
+    assert model_path.read_bytes() == original_model
+    assert metrics_path.read_text(encoding="utf-8") == '{"previous":"evaluation"}'
+
+
 def test_delay_prediction_endpoint_uses_model_and_has_explicit_unavailable_state():
     bundle, _ = delay_training.train_delay_model(
         labeled_daily_data(),
