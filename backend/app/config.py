@@ -2,15 +2,16 @@ from pathlib import Path
 import os
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
-DATA_DIR = ROOT_DIR / "data"
+DATA_DIR = Path(os.getenv("PORT_DATA_DIR") or ROOT_DIR / "data")
+ARTIFACTS_DIR = Path(os.getenv("PORT_ARTIFACTS_DIR") or ROOT_DIR / "artifacts")
 PROCESSED_PATH = DATA_DIR / "processed" / "port_daily.csv"
 PROVENANCE_PATH = DATA_DIR / "manifests" / "provenance.json"
 QUALITY_PATH = DATA_DIR / "processed" / "data_quality.json"
-MODEL_PATH = ROOT_DIR / "artifacts" / "models" / "congestion_model.joblib"
-DELAY_MODEL_PATH = ROOT_DIR / "artifacts" / "models" / "delay_model.joblib"
-METRICS_PATH = ROOT_DIR / "artifacts" / "metrics" / "evaluation.json"
-DELAY_METRICS_PATH = ROOT_DIR / "artifacts" / "metrics" / "delay_evaluation.json"
-PLOTS_DIR = ROOT_DIR / "artifacts" / "metrics"
+MODEL_PATH = ARTIFACTS_DIR / "models" / "congestion_model.joblib"
+DELAY_MODEL_PATH = ARTIFACTS_DIR / "models" / "delay_model.joblib"
+METRICS_PATH = ARTIFACTS_DIR / "metrics" / "evaluation.json"
+DELAY_METRICS_PATH = ARTIFACTS_DIR / "metrics" / "delay_evaluation.json"
+PLOTS_DIR = ARTIFACTS_DIR / "metrics"
 PORT_ID = "port-of-los-angeles"
 PORT_NAME = "Port of Los Angeles (development geofence)"
 FEATURES = [

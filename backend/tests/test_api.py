@@ -7,8 +7,31 @@ from app.config import FEATURES
 def test_health_reports_artifact_state():
     with TestClient(app) as client:
         response = client.get("/health")
+        readiness = client.get("/ready")
     assert response.status_code == 200
     assert {"status", "model_loaded", "data_available"} <= response.json().keys()
+    assert readiness.status_code == 200
+    assert readiness.json()["status"] == "ready"
+    assert readiness.json()["data_compatible"] is True
+
+
+def test_readiness_fails_when_prediction_model_is_unavailable():
+    with TestClient(app) as client:
+        original = app.state.model_bundle
+        original_model_loaded = app.state.model_loaded
+        app.state.model_bundle = None
+        app.state.model_loaded = False
+        try:
+            readiness = client.get("/ready")
+            health = client.get("/health")
+        finally:
+            app.state.model_bundle = original
+            app.state.model_loaded = original_model_loaded
+
+    assert readiness.status_code == 503
+    assert readiness.json()["status"] == "not_ready"
+    assert readiness.json()["model_loaded"] is False
+    assert health.status_code == 200
 
 
 def test_metadata_and_metrics_do_not_fabricate_results():

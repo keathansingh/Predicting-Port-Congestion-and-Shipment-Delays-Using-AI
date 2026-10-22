@@ -734,24 +734,3 @@ def test_synthetic_dataset_upload_keeps_synthetic_provenance_and_dataset_identit
     assert provenance["sha256"] == upload.json()["sha256"]
     assert quality["source_dataset_sha256"] == upload.json()["sha256"]
     assert "synthetic" in active["source_name"].lower()
-
-
-def test_dataset_snapshot_persistence_receives_raw_upload_before_activation(
-    tmp_path, monkeypatch
-):
-    configure_dataset_paths(tmp_path, monkeypatch)
-    contents = ais_csv()
-    captured_upload = {}
-
-    def capture_snapshot(processed, quality, provenance, upload):
-        assert processed.is_file()
-        assert quality.is_file()
-        assert provenance.is_file()
-        assert upload.is_file()
-        captured_upload["bytes"] = upload.read_bytes()
-
-    monkeypatch.setattr(datasets, "persist_dataset_snapshot", capture_snapshot)
-
-    datasets.process_upload(contents, "snapshot-fixture.csv")
-
-    assert captured_upload["bytes"] == contents

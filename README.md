@@ -46,48 +46,79 @@ The application combines a React frontend with a FastAPI backend to provide inte
 port-congestion-prediction/
 ├── backend/
 │   ├── app/
-│   ├── data/
-│   │   ├── processed/
-│   │   └── synthetic/
+│   ├── tests/
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   ├── public/
 │   ├── package.json
 │   └── vite.config.ts
+├── artifacts/
+│   ├── models/
+│   └── metrics/
+├── data/
+│   ├── processed/
+│   └── synthetic/
+├── render.yaml
 ├── .gitignore
 └── README.md
 ```
 
-*The structure above is representative. Actual files and folders may vary depending on the current implementation.*
+## Deployment architecture
 
-## Deploy frontend and API together on Vercel
+This repository is a monorepo with **two separate deployments**:
 
-The repository is configured for **one Vercel project** rooted at this repository:
+- Vercel hosts the static React/Vite frontend from `frontend/`.
+- Render runs the FastAPI application from `backend/app/main.py`, with model artifacts and processed baseline data stored at the repository root under `artifacts/` and `data/`.
 
-- `frontend/dist` is the static Vite build.
-- `api/[...path].py` exposes the existing FastAPI routes from the same deployment and domain.
-- The checked-in processed daily CSV, provenance, evaluation metrics, and two small sklearn model artifacts are bundled with the function. The 13 MB synthetic source CSV, local uploads, tests, and training-only chart files are excluded from the function bundle because runtime inference uses the processed daily CSV and serialized models.
-- `requirements.txt` is the production-only Python dependency manifest. `.python-version` selects Python 3.14, which Vercel currently supports.
+The frontend uses `VITE_API_BASE_URL` to call the HTTPS Render service. It does not host or proxy the Python API. Dataset uploads (up to 25 MiB per CSV) update the active processed data and delay model, so Render needs a persistent disk for those files to survive restarts and deployments. The supplied [render.yaml](./render.yaml) configures a 1 GB persistent disk mounted at `/var/data`; this requires a paid Render web-service plan. Render disks are instance-local and constrain the service to a single instance; disk-backed deploys also do not provide zero-downtime deploys. If those limits are unsuitable, use external object/database storage before enabling dataset uploads at scale.
 
-From the repository root, import the linked GitHub repository into Vercel as **one project**. Set the Project Name to `Predicting Port Congestion and Shipment Delays Using AI`, Root Directory to `.`, and Framework Preset to `Other`. Leave the build, install, and output settings at their `vercel.json` values. The build installs `frontend/package-lock.json`, runs the frontend production build, and publishes `frontend/dist`; the Python catch-all function routes API paths to FastAPI. `/health` is rewritten to the FastAPI health handler, while `/api/v1/...` paths remain unchanged. Other paths fall back to the SPA entry point.
+At local frontend development, the API defaults to `http://127.0.0.1:8000`; no frontend environment file is required. If needed, set a different `VITE_API_BASE_URL` in `frontend/.env.local`. For production, configure the HTTPS Render URL in Vercel; the Vite variable is embedded in browser code and must never contain credentials.
 
-Connect a **private Vercel Blob store to this same project** (Storage → Blob → Connect Store). Vercel supplies `BLOB_STORE_ID` and its short-lived OIDC token to the function. The Python Blob SDK uses those credentials to store the active uploaded dataset snapshot privately. Do not commit Blob tokens. No `VITE_API_BASE_URL` is needed in production because the frontend calls the API on its own origin; local development keeps the `http://127.0.0.1:8000` default. `PORT_CORS_ORIGINS` is optional and is only needed for intentional cross-origin clients; same-origin Vercel requests do not require CORS.
+### Deploy the backend to Render
 
-The dataset upload UI allows up to 4 MiB in production because Vercel Functions limit request and response bodies to 4.5 MB. Local development retains the existing 25 MiB limit. Larger uploads require a client-direct-to-Blob flow; this app has no authentication or authorization flow to securely mint direct-upload tokens, so that capability is not enabled. Dataset activation requires the connected private Blob store; the initial checked-in dataset and predictions remain available without it. Uploaded data is stored across function instances in Blob, but models are not retrained by uploads. When the active dataset no longer matches the bundled delay model, shipment-delay prediction reports that model unavailable until a compatible model is retrained and redeployed.
+Create a **Web Service** from this repository, or create a Blueprint from `render.yaml`. For manual setup use:
 
-Deployment checks after each first deployment:
+- Root Directory: repository root (`.`), so the model/data directories outside `backend/` remain available.
+- Runtime: Python.
+- Build Command: `pip install -r backend/requirements.txt`
+- Start Command: `uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT`
+- Health Check Path: `/ready`
+- Python: `.python-version` selects Python 3.14.
+- Persistent disk: mount at `/var/data`, at least 1 GB. Set `PORT_DATA_DIR=/var/data/data` and `PORT_ARTIFACTS_DIR=/var/data/artifacts`.
+
+Render provides `PORT` automatically. `render.yaml` declares the Python version, data/artifact paths, disk, and start/build commands. Its `PORT_CORS_ORIGINS` value is intentionally a dashboard prompt (`sync: false`): after the Vercel site exists, set it to the exact frontend origin, for example `https://your-frontend-project.vercel.app`. To retain local frontend access on the deployed API, comma-separate the desired local origins and production origin. Do not add a trailing slash to an origin.
+
+At first startup with an empty mounted disk, the service copies the checked-in processed dataset, provenance, quality report, models, and evaluation JSON into the disk. Subsequent startups preserve the active files. Dataset activation and delay model training can then update files under the disk-backed paths. Startup errors are not swallowed; `/ready` returns 503 if the congestion model or processed data is unavailable.
+
+### Deploy the frontend to Vercel
+
+Import the same GitHub repository as a Vercel project and set:
+
+- Root Directory: `frontend` (leave “Include files outside the Root Directory” off).
+- Framework Preset: Vite.
+- Build Command: `npm run build`.
+- Output Directory: `dist`.
+- Install Command: `npm install` (or Vercel's automatic install).
+- Environment Variable: `VITE_API_BASE_URL=https://<your-render-service>.onrender.com`.
+
+Select Node.js `22.x` in Vercel (Vite 8 requires Node.js 20.19+ or 22.12+). Set the variable for Production and Preview as appropriate, then redeploy after changes. The frontend includes [`.env.example`](./frontend/.env.example) with a placeholder; replace it with the Render URL and do not treat the example as a live value. The value is public browser configuration, not a secret. API requests fail with a clear configuration error when it is missing, and production rejects non-HTTPS API URLs. The Vercel rewrite serves `index.html` for frontend navigation; API requests go directly from the browser to Render. CORS allows exact origins only: add each Vercel preview origin that needs API access to Render's `PORT_CORS_ORIGINS`; do not use a wildcard.
+
+### API endpoints
+
+The frontend dashboard loads `GET /api/v1/dashboard` and `GET /api/v1/delay/metrics`; the prediction forms submit to `POST /api/v1/predict` and `POST /api/v1/delay/predict`. Dataset management uses `GET /api/v1/datasets/active`, `POST /api/v1/datasets/validate`, and `POST /api/v1/datasets/upload`. Other supported routes are:
 
 ```text
-https://<your-vercel-domain>/health
-https://<your-vercel-domain>/api/v1/summary
-https://<your-vercel-domain>/api/v1/metadata
-https://<your-vercel-domain>/api/v1/metrics
-https://<your-vercel-domain>/api/v1/delay/metrics
-https://<your-vercel-domain>/api/v1/ports
+GET  /health
+GET  /ready
+GET  /api/v1/summary
+GET  /api/v1/metadata
+GET  /api/v1/metrics
+GET  /api/v1/ports
+GET  /api/v1/ports/{port_id}/history
 ```
 
-The deployment uses Vercel Functions, not a continuously running Uvicorn server. On cold start the function loads the bundled models/data and initializes the private Blob snapshot if one exists. Model training and evaluation remain offline scripts and should be followed by committing/redeploying the updated model and evaluation artifacts.
+After both services deploy, open `https://<render-service>.onrender.com/ready` and confirm it returns HTTP 200 with model/data loaded. Then use that Render HTTPS URL as `VITE_API_BASE_URL`, redeploy Vercel, and inspect browser developer tools → Network to confirm dashboard requests return JSON from the Render domain with no CORS errors.
 
 ## Getting Started
 
@@ -95,8 +126,8 @@ The deployment uses Vercel Functions, not a continuously running Uvicorn server.
 
 Install the following tools before running the application:
 
-- Python 3.10 or later
-- Node.js and npm
+- Python 3.14 (the checked-in `.python-version` and Render configuration use 3.14).
+- Node.js 20.19+ or 22.12+ and npm (use Node.js 22.x on Vercel).
 - Git
 
 ### 1. Clone the Repository
@@ -150,7 +181,7 @@ If your frontend uses a different port, use the URL displayed in the terminal an
 
 ## Dataset
 
-The application uses the dataset configured in the project's data pipeline and dataset manager. Depending on the active configuration, the data may include vessel activity, timestamps, port capacity, queue length, weather conditions, and historical delay or congestion labels.
+The checked-in runtime assets include the processed daily CSV and trained congestion and delay model artifacts. The 13 MB source dataset is ignored by Git and is not needed for inference. Dataset uploads and updated model files are held on the Render persistent disk.
 
 **Data provenance:** Synthetic data is not real-world operational AIS data. If a synthetic dataset is used, its predictions and evaluation results should be interpreted as experimental rather than proof of real-world performance.
 
@@ -171,7 +202,7 @@ python scripts\evaluate_model.py
 
 The generated AIS-like records and both targets are simulated development data, not real vessel broadcasts, verified congestion events, or shipment delivery outcomes. The congestion and shipment-delay models are independent. The model scripts write their own files under `artifacts\models\` and evaluation JSON under `artifacts\metrics\`; evaluation summaries use held-out data. The delay classifier does not estimate duration, so its duration field is unavailable.
 
-For local inference, start FastAPI and the Vite frontend using the commands above. The API exposes congestion prediction at `POST /api/v1/predict`, shipment-delay classification at `POST /api/v1/delay/predict`, congestion metrics at `GET /api/v1/metrics`, and delay metrics at `GET /api/v1/delay/metrics`. The frontend sends requests to the local API in development and to the same deployment origin in production. If a newly activated dataset does not match the bundled delay model, the delay endpoint reports the model unavailable instead of training or writing model files at serverless startup.
+For local inference, start FastAPI and the Vite frontend using the commands above. The API exposes congestion prediction at `POST /api/v1/predict`, shipment-delay classification at `POST /api/v1/delay/predict`, congestion metrics at `GET /api/v1/metrics`, and delay metrics at `GET /api/v1/delay/metrics`. The frontend sends requests to the local API in development and to the configured Render API in production. When the active dataset changes, restart the backend to load it and retrain the shipment-delay model when valid labels are available.
 
 ## Model Evaluation
 

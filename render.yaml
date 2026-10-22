@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: port-congestion-api
+    runtime: python
+    plan: starter
+    rootDir: .
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    healthCheckPath: /ready
+    disk:
+      name: port-congestion-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.8
+      - key: PORT_DATA_DIR
+        value: /var/data/data
+      - key: PORT_ARTIFACTS_DIR
+        value: /var/data/artifacts
+      - key: PORT_CORS_ORIGINS
+        sync: false

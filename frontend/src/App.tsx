@@ -14,12 +14,11 @@ import {
   datasetsMatch, describePeriodCoverage, latestValidObservation, sampleHistory,
 } from './dashboardData.mjs'
 import type { DashboardSummary, HistoryRow } from './dashboardData.mjs'
+import { apiUrl } from './apiConfig.mjs'
 import './App.css'
 
-const API = import.meta.env.VITE_API_BASE_URL
-  ?? (import.meta.env.DEV ? 'http://127.0.0.1:8000' : '')
 const PORT_ID = 'port-of-los-angeles'
-const MAX_UPLOAD_BYTES = import.meta.env.PROD ? 4 * 1024 * 1024 : 25 * 1024 * 1024
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 type Page = 'overview' | 'port' | 'predict' | 'delay' | 'performance' | 'methodology' | 'dataset'
 type DatePeriod = '1m' | '6m' | '1y' | '2y' | '3y' | 'custom'
 type Summary = DashboardSummary
@@ -170,7 +169,7 @@ type UploadResult = {
 type FormValues = Record<string, string>
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const url = `${API}${path}`
+  const url = apiUrl(path)
   const method = init?.method ?? 'GET'
   let response: Response
   try {
@@ -386,7 +385,7 @@ function App() {
           {syntheticNotice && <div className="synthetic-banner" role="note"><CircleAlert size={17} /><span><strong>Synthetic data notice</strong> — {syntheticNotice}</span></div>}
           {datasetMismatchNotice && <div className="synthetic-banner" role="note"><CircleAlert size={17} /><span><strong>Evaluation dataset differs</strong> — {datasetMismatchNotice}</span></div>}
           {error && <div className="error-banner" role="alert"><CircleAlert size={18} /><span>{error}</span></div>}
-          {(loading || rangeLoading) && <div className="loading-state"><LoaderCircle className="spin" size={24} />{loading ? 'Connecting to local analytics API…' : 'Refreshing the active dataset…'}</div>}
+          {(loading || rangeLoading) && <div className="loading-state"><LoaderCircle className="spin" size={24} />{loading ? 'Connecting to analytics API…' : 'Refreshing the active dataset…'}</div>}
           {!loading && !metadata && !error && <div className="empty-chart">No dashboard data is available.</div>}
           {!loading && metadata && page === 'overview' && <Overview summary={summary} metadata={metadata} metrics={metrics} history={visibleHistory} loadHistory={() => setPage('port')} period={period} setPeriod={setPeriod} range={selectedRange} setCustomStart={setCustomStart} setCustomEnd={setCustomEnd} rangeLoading={rangeLoading} coverageStart={coverageStart} coverageEnd={coverageEnd} />}
           {!loading && metadata && page === 'port' && <PortAnalysis portList={ports} summary={summary} rows={visibleHistory} loading={rangeLoading} datasetAvailable={activeDataset?.available ?? false} period={period} setPeriod={setPeriod} range={selectedRange} setCustomStart={setCustomStart} setCustomEnd={setCustomEnd} coverageStart={coverageStart} coverageEnd={coverageEnd} />}
@@ -537,7 +536,7 @@ function DatasetManager({ active, metadata, onUploaded }: {
     try {
       const body = new FormData()
       body.append('file', candidate)
-      const url = `${API}/api/v1/datasets/validate`
+      const url = apiUrl('/api/v1/datasets/validate')
       let response: Response
       try {
         response = await fetch(url, { method: 'POST', body })
@@ -570,16 +569,17 @@ function DatasetManager({ active, metadata, onUploaded }: {
   }
 
   function uploadFile(candidate: File, source: string): Promise<UploadResult> {
+    const url = apiUrl('/api/v1/datasets/upload')
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest()
-      request.open('POST', `${API}/api/v1/datasets/upload`)
+      request.open('POST', url)
       request.upload.onprogress = (event) => {
         if (event.lengthComputable) setProgress(Math.round(event.loaded / event.total * 100))
       }
       request.onload = () => {
         let payload: unknown
         try { payload = JSON.parse(request.responseText) as unknown } catch {
-          reject(new Error(`POST ${API}/api/v1/datasets/upload returned invalid JSON (${request.status}).`))
+          reject(new Error(`POST ${url} returned invalid JSON (${request.status}).`))
           return
         }
         if (request.status >= 200 && request.status < 300) {
@@ -590,10 +590,10 @@ function DatasetManager({ active, metadata, onUploaded }: {
           ? (payload as { detail: string | { message?: string; validation?: DatasetValidation } }).detail
           : null
         const message = typeof detail === 'string' ? detail : detail?.message
-        reject(new Error(`POST ${API}/api/v1/datasets/upload returned ${request.status}${message ? `: ${message}` : ''}`))
+        reject(new Error(`POST ${url} returned ${request.status}${message ? `: ${message}` : ''}`))
       }
-      request.onerror = () => reject(new Error(`POST ${API}/api/v1/datasets/upload failed before receiving a response.`))
-      request.ontimeout = () => reject(new Error(`POST ${API}/api/v1/datasets/upload timed out.`))
+      request.onerror = () => reject(new Error(`POST ${url} failed before receiving a response.`))
+      request.ontimeout = () => reject(new Error(`POST ${url} timed out.`))
       const body = new FormData()
       body.append('file', candidate)
       if (source.trim()) body.append('source_name', source.trim())
