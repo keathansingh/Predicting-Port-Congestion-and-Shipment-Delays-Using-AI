@@ -1,0 +1,99 @@
+{
+  "data_status": "synthetic",
+  "source_name": "Seeded synthetic AIS-like development data",
+  "source_url": null,
+  "acquisition_date": null,
+  "generated_at": "2026-10-22T04:34:03.529047+00:00",
+  "seed": 42,
+  "filename": "ais_development.csv",
+  "file_size_bytes": 13493013,
+  "sha256": "f43b114db13970283d41c1de13bbf2a655b4208f1525dddc6a76119f0039cd1d",
+  "rows": 74217,
+  "observation_start": "2023-01-01T00:49:00+00:00",
+  "observation_end": "2024-12-31T23:31:00+00:00",
+  "columns": [
+    "MMSI",
+    "BaseDateTime",
+    "LAT",
+    "LON",
+    "SOG",
+    "VesselArrivalTime",
+    "PortName",
+    "PortCapacity_Berths",
+    "VesselArrivals_Daily",
+    "QueueLength_Vessels",
+    "WeatherCondition",
+    "WindSpeed_kmh",
+    "HistoricalDelayMinutes",
+    "SyntheticCongestionLabel",
+    "SyntheticDelayMinutes",
+    "SyntheticDelayLabel",
+    "SyntheticData"
+  ],
+  "original_columns": [
+    "MMSI",
+    "BaseDateTime",
+    "LAT",
+    "LON",
+    "SOG",
+    "VesselArrivalTime",
+    "PortName",
+    "PortCapacity_Berths",
+    "VesselArrivals_Daily",
+    "QueueLength_Vessels",
+    "WeatherCondition",
+    "WindSpeed_kmh",
+    "HistoricalDelayMinutes",
+    "SyntheticCongestionLabel",
+    "SyntheticDelayMinutes",
+    "SyntheticDelayLabel",
+    "SyntheticData"
+  ],
+  "synthetic": true,
+  "synthetic_notice": "Generated observations; not real vessel broadcasts or public source data.",
+  "geographic_scope": {
+    "port_id": "port-of-los-angeles",
+    "label": "Configured Port of Los Angeles synthetic development geofence (not a real-world port identity claim)",
+    "identified": true,
+    "identification_method": "Synthetic coordinates are generated inside the configured development geofence; they do not verify a real port or AIS source.",
+    "coordinate_coverage": {
+      "latitude": {
+        "min": 33.700013,
+        "max": 34.02
+      },
+      "longitude": {
+        "min": -118.459995,
+        "max": -118.080006
+      }
+    },
+    "geofence": {
+      "lat_min": 33.6,
+      "lat_max": 34.2,
+      "lon_min": -118.6,
+      "lon_max": -118.0
+    }
+  },
+  "target_definitions": {
+    "SyntheticCongestionLabel": "Simulated congestion label driven by queue-to-capacity pressure, anchorage count, and adverse weather.",
+    "SyntheticDelayLabel": "Simulated delay label derived from SyntheticDelayMinutes >= 60; delay minutes depend on queue pressure, weather, wind, and seeded noise."
+  },
+  "synthetic_process": {
+    "latent_noise_persistence": 0.8,
+    "anchorage_dwell_hours": "For qualifying low-speed geofence observations, repeated records for the same vessel/day span a simulated duration; not ground-truth waiting time.",
+    "daily_conditions": "Arrivals, berth capacity, queue, anchorage share, weather, and wind vary by season, traffic, and seeded random variation."
+  },
+  "processed_at": "2026-10-22T04:34:24.031332+00:00",
+  "quality_report": "data\\processed\\data_quality.json",
+  "processed_rows": 730,
+  "processed_observation_start": "2023-01-02",
+  "processed_observation_end": "2024-12-31",
+  "target_status": "provided",
+  "target_source": "SyntheticCongestionLabel column in the source dataset; aggregated by UTC day using max value.",
+  "target_definition": "The uploaded synthetic congestion label is used as the binary target when it is supplied and valid.",
+  "delay_target_status": "provided",
+  "delay_target_source": "SyntheticDelayLabel in the source dataset, aggregated by UTC day using max.",
+  "delay_target_distribution": {
+    "not_delayed": 277,
+    "delayed": 453
+  }
+}

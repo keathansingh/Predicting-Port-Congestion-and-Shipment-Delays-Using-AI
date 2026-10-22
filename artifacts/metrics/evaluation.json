@@ -1,0 +1,674 @@
+{
+  "model_version": "logistic_regression_balanced-seed42-v2",
+  "selected_model": "logistic_regression_balanced",
+  "classification_threshold": 0.36574299411536376,
+  "data_status": "synthetic",
+  "training_dataset": {
+    "data_status": "synthetic",
+    "source_name": "Seeded synthetic AIS-like development data",
+    "filename": "ais_development.csv",
+    "sha256": "f43b114db13970283d41c1de13bbf2a655b4208f1525dddc6a76119f0039cd1d",
+    "acquisition_date": null,
+    "identity_recorded": true
+  },
+  "features": [
+    "vessel_density",
+    "anchorage_vessels",
+    "anchorage_dwell_hours",
+    "day_of_week",
+    "month"
+  ],
+  "synthetic_warning": "Synthetic development data; metrics are not evidence of real-world maritime performance.",
+  "target": "next_day_congestion",
+  "target_status": "provided",
+  "target_definition": "The uploaded synthetic congestion label is used as the binary target when it is supplied and valid.",
+  "target_source": "SyntheticCongestionLabel column in the source dataset; aggregated by UTC day using max value.",
+  "prediction_horizon": "Following UTC calendar day",
+  "calibration": {
+    "status": "sigmoid_calibrated_on_calibration_partition",
+    "method": "sigmoid",
+    "calibration_fit_brier_score": 0.2111237591325239,
+    "sample_count": 109,
+    "independent_test_brier_score": 0.31728102250649515,
+    "fit_brier_by_model": {
+      "logistic_regression": 0.21133131867260072,
+      "logistic_regression_balanced": 0.2111237591325239,
+      "random_forest": 0.21235141940336197
+    }
+  },
+  "model_settings": {
+    "logistic_regression": {
+      "class_weight": null,
+      "selection_metric": "calibrated validation Brier score"
+    },
+    "logistic_regression_balanced": {
+      "class_weight": "balanced",
+      "selection_metric": "calibrated validation Brier score"
+    },
+    "random_forest": {
+      "class_weight": "balanced",
+      "selection_metric": "calibrated validation Brier score"
+    }
+  },
+  "splits": {
+    "train": {
+      "sample_count": 438,
+      "period": {
+        "start": "2023-01-02",
+        "end": "2024-03-14"
+      }
+    },
+    "calibration": {
+      "sample_count": 109,
+      "period": {
+        "start": "2024-03-15",
+        "end": "2024-07-01"
+      }
+    },
+    "validation": {
+      "sample_count": 109,
+      "period": {
+        "start": "2024-07-02",
+        "end": "2024-10-18"
+      }
+    },
+    "test": {
+      "sample_count": 74,
+      "period": {
+        "start": "2024-10-19",
+        "end": "2024-12-31"
+      }
+    }
+  },
+  "validation_selection_brier": {
+    "logistic_regression": 0.1771095462539101,
+    "logistic_regression_balanced": 0.1762537452017511,
+    "random_forest": 0.1794027997752855
+  },
+  "validation_raw_brier": {
+    "logistic_regression": 0.2068589750486601,
+    "logistic_regression_balanced": 0.18610384443500128,
+    "random_forest": 0.17627350726405722
+  },
+  "validation_threshold_metrics": {
+    "logistic_regression": {
+      "threshold": 0.2654308920959793,
+      "precision": 0.42105263157894735,
+      "recall": 0.8,
+      "f1": 0.5517241379310345,
+      "predicted_positive": 57
+    },
+    "logistic_regression_balanced": {
+      "threshold": 0.36574299411536376,
+      "precision": 0.5,
+      "recall": 0.6666666666666666,
+      "f1": 0.5714285714285715,
+      "predicted_positive": 40
+    },
+    "random_forest": {
+      "threshold": 0.36542585006335454,
+      "precision": 0.5116279069767442,
+      "recall": 0.7333333333333333,
+      "f1": 0.6027397260273971,
+      "predicted_positive": 43
+    }
+  },
+  "training_only_temporal_cv": {
+    "logistic_regression": {
+      "folds": [
+        {
+          "fold": 1,
+          "training_samples": 73,
+          "validation_samples": 73,
+          "training_end": "2023-03-15",
+          "validation_start": "2023-03-16",
+          "validation_end": "2023-05-27",
+          "brier_score": 0.19154381125578462
+        },
+        {
+          "fold": 2,
+          "training_samples": 146,
+          "validation_samples": 73,
+          "training_end": "2023-05-27",
+          "validation_start": "2023-05-28",
+          "validation_end": "2023-08-08",
+          "brier_score": 0.26241561734409524
+        },
+        {
+          "fold": 3,
+          "training_samples": 219,
+          "validation_samples": 73,
+          "training_end": "2023-08-08",
+          "validation_start": "2023-08-09",
+          "validation_end": "2023-10-20",
+          "brier_score": 0.24142511026688998
+        },
+        {
+          "fold": 4,
+          "training_samples": 292,
+          "validation_samples": 73,
+          "training_end": "2023-10-20",
+          "validation_start": "2023-10-21",
+          "validation_end": "2024-01-01",
+          "brier_score": 0.2991061279032754
+        },
+        {
+          "fold": 5,
+          "training_samples": 365,
+          "validation_samples": 73,
+          "training_end": "2024-01-01",
+          "validation_start": "2024-01-02",
+          "validation_end": "2024-03-14",
+          "brier_score": 0.18356473991560388
+        }
+      ],
+      "mean_brier_score": 0.23561108133712985
+    },
+    "logistic_regression_balanced": {
+      "folds": [
+        {
+          "fold": 1,
+          "training_samples": 73,
+          "validation_samples": 73,
+          "training_end": "2023-03-15",
+          "validation_start": "2023-03-16",
+          "validation_end": "2023-05-27",
+          "brier_score": 0.21268643411025476
+        },
+        {
+          "fold": 2,
+          "training_samples": 146,
+          "validation_samples": 73,
+          "training_end": "2023-05-27",
+          "validation_start": "2023-05-28",
+          "validation_end": "2023-08-08",
+          "brier_score": 0.29021920718331057
+        },
+        {
+          "fold": 3,
+          "training_samples": 219,
+          "validation_samples": 73,
+          "training_end": "2023-08-08",
+          "validation_start": "2023-08-09",
+          "validation_end": "2023-10-20",
+          "brier_score": 0.24634249871514438
+        },
+        {
+          "fold": 4,
+          "training_samples": 292,
+          "validation_samples": 73,
+          "training_end": "2023-10-20",
+          "validation_start": "2023-10-21",
+          "validation_end": "2024-01-01",
+          "brier_score": 0.3060483723466825
+        },
+        {
+          "fold": 5,
+          "training_samples": 365,
+          "validation_samples": 73,
+          "training_end": "2024-01-01",
+          "validation_start": "2024-01-02",
+          "validation_end": "2024-03-14",
+          "brier_score": 0.19479334657517436
+        }
+      ],
+      "mean_brier_score": 0.2500179717861133
+    },
+    "random_forest": {
+      "folds": [
+        {
+          "fold": 1,
+          "training_samples": 73,
+          "validation_samples": 73,
+          "training_end": "2023-03-15",
+          "validation_start": "2023-03-16",
+          "validation_end": "2023-05-27",
+          "brier_score": 0.19667463473268867
+        },
+        {
+          "fold": 2,
+          "training_samples": 146,
+          "validation_samples": 73,
+          "training_end": "2023-05-27",
+          "validation_start": "2023-05-28",
+          "validation_end": "2023-08-08",
+          "brier_score": 0.2485156071628211
+        },
+        {
+          "fold": 3,
+          "training_samples": 219,
+          "validation_samples": 73,
+          "training_end": "2023-08-08",
+          "validation_start": "2023-08-09",
+          "validation_end": "2023-10-20",
+          "brier_score": 0.24240636076621955
+        },
+        {
+          "fold": 4,
+          "training_samples": 292,
+          "validation_samples": 73,
+          "training_end": "2023-10-20",
+          "validation_start": "2023-10-21",
+          "validation_end": "2024-01-01",
+          "brier_score": 0.28471962515308563
+        },
+        {
+          "fold": 5,
+          "training_samples": 365,
+          "validation_samples": 73,
+          "training_end": "2024-01-01",
+          "validation_start": "2024-01-02",
+          "validation_end": "2024-03-14",
+          "brier_score": 0.1582794043180671
+        }
+      ],
+      "mean_brier_score": 0.22611912642657642
+    }
+  },
+  "comparison_test_raw_models": {
+    "logistic_regression": {
+      "sample_count": 74,
+      "classification_threshold": 0.5,
+      "class_distribution": {
+        "negative": 29,
+        "positive": 45
+      },
+      "accuracy": 0.5135135135135135,
+      "precision": 0.6285714285714286,
+      "recall": 0.4888888888888889,
+      "f1": 0.55,
+      "roc_auc": 0.6268199233716475,
+      "roc_auc_reason": null,
+      "brier_score": 0.24958753109990303,
+      "log_loss": 0.6916188672869736,
+      "confusion_matrix": [
+        [
+          16,
+          13
+        ],
+        [
+          23,
+          22
+        ]
+      ]
+    },
+    "logistic_regression_balanced": {
+      "sample_count": 74,
+      "classification_threshold": 0.5,
+      "class_distribution": {
+        "negative": 29,
+        "positive": 45
+      },
+      "accuracy": 0.5,
+      "precision": 0.7,
+      "recall": 0.3111111111111111,
+      "f1": 0.4307692307692308,
+      "roc_auc": 0.6237547892720307,
+      "roc_auc_reason": null,
+      "brier_score": 0.27600969571848344,
+      "log_loss": 0.753018140956432,
+      "confusion_matrix": [
+        [
+          23,
+          6
+        ],
+        [
+          31,
+          14
+        ]
+      ]
+    },
+    "random_forest": {
+      "sample_count": 74,
+      "classification_threshold": 0.5,
+      "class_distribution": {
+        "negative": 29,
+        "positive": 45
+      },
+      "accuracy": 0.581081081081081,
+      "precision": 0.7058823529411765,
+      "recall": 0.5333333333333333,
+      "f1": 0.6075949367088608,
+      "roc_auc": 0.6398467432950192,
+      "roc_auc_reason": null,
+      "brier_score": 0.24724170107433707,
+      "log_loss": 0.6894682383626655,
+      "confusion_matrix": [
+        [
+          19,
+          10
+        ],
+        [
+          21,
+          24
+        ]
+      ]
+    }
+  },
+  "comparison_test_calibrated_models": {
+    "logistic_regression": {
+      "sample_count": 74,
+      "classification_threshold": 0.2654308920959793,
+      "class_distribution": {
+        "negative": 29,
+        "positive": 45
+      },
+      "accuracy": 0.5540540540540541,
+      "precision": 0.6428571428571429,
+      "recall": 0.6,
+      "f1": 0.6206896551724138,
+      "roc_auc": 0.6268199233716475,
+      "roc_auc_reason": null,
+      "brier_score": 0.31409482349807943,
+      "log_loss": 0.8537280349386851,
+      "confusion_matrix": [
+        [
+          14,
+          15
+        ],
+        [
+          18,
+          27
+        ]
+      ]
+    },
+    "logistic_regression_balanced": {
+      "sample_count": 74,
+      "classification_threshold": 0.36574299411536376,
+      "class_distribution": {
+        "negative": 29,
+        "positive": 45
+      },
+      "accuracy": 0.5405405405405406,
+      "precision": 0.72,
+      "recall": 0.4,
+      "f1": 0.5142857142857142,
+      "roc_auc": 0.6237547892720307,
+      "roc_auc_reason": null,
+      "brier_score": 0.31728102250649515,
+      "log_loss": 0.8630129842432919,
+      "confusion_matrix": [
+        [
+          22,
+          7
+        ],
+        [
+          27,
+          18
+        ]
+      ]
+    },
+    "random_forest": {
+      "sample_count": 74,
+      "classification_threshold": 0.36542585006335454,
+      "class_distribution": {
+        "negative": 29,
+        "positive": 45
+      },
+      "accuracy": 0.6486486486486487,
+      "precision": 0.6862745098039216,
+      "recall": 0.7777777777777778,
+      "f1": 0.7291666666666666,
+      "roc_auc": 0.6398467432950192,
+      "roc_auc_reason": null,
+      "brier_score": 0.24406233136591027,
+      "log_loss": 0.6820159065115758,
+      "confusion_matrix": [
+        [
+          13,
+          16
+        ],
+        [
+          10,
+          35
+        ]
+      ]
+    }
+  },
+  "threshold_selection": {
+    "method": "Maximum F1 on the chronological validation partition using probabilities calibrated on the separate calibration partition; ties select the lowest threshold.",
+    "partition": "validation",
+    "sample_count": 109,
+    "positive_count": 30,
+    "model_thresholds": {
+      "logistic_regression": {
+        "threshold": 0.2654308920959793,
+        "precision": 0.42105263157894735,
+        "recall": 0.8,
+        "f1": 0.5517241379310345,
+        "predicted_positive": 57
+      },
+      "logistic_regression_balanced": {
+        "threshold": 0.36574299411536376,
+        "precision": 0.5,
+        "recall": 0.6666666666666666,
+        "f1": 0.5714285714285715,
+        "predicted_positive": 40
+      },
+      "random_forest": {
+        "threshold": 0.36542585006335454,
+        "precision": 0.5116279069767442,
+        "recall": 0.7333333333333333,
+        "f1": 0.6027397260273971,
+        "predicted_positive": 43
+      }
+    },
+    "selected_model": "logistic_regression_balanced",
+    "selected_threshold": 0.36574299411536376
+  },
+  "test": {
+    "sample_count": 74,
+    "period": {
+      "start": "2024-10-19",
+      "end": "2024-12-31"
+    },
+    "selected_model": {
+      "sample_count": 74,
+      "classification_threshold": 0.36574299411536376,
+      "class_distribution": {
+        "negative": 29,
+        "positive": 45
+      },
+      "accuracy": 0.5405405405405406,
+      "precision": 0.72,
+      "recall": 0.4,
+      "f1": 0.5142857142857142,
+      "roc_auc": 0.6237547892720307,
+      "roc_auc_reason": null,
+      "brier_score": 0.31728102250649515,
+      "log_loss": 0.8630129842432919,
+      "confusion_matrix": [
+        [
+          22,
+          7
+        ],
+        [
+          27,
+          18
+        ]
+      ]
+    },
+    "selected_model_fixed_0_5": {
+      "sample_count": 74,
+      "classification_threshold": 0.5,
+      "class_distribution": {
+        "negative": 29,
+        "positive": 45
+      },
+      "accuracy": 0.4864864864864865,
+      "precision": 0.7692307692307693,
+      "recall": 0.2222222222222222,
+      "f1": 0.3448275862068966,
+      "roc_auc": 0.6237547892720307,
+      "roc_auc_reason": null,
+      "brier_score": 0.31728102250649515,
+      "log_loss": 0.8630129842432919,
+      "confusion_matrix": [
+        [
+          26,
+          3
+        ],
+        [
+          35,
+          10
+        ]
+      ]
+    },
+    "selected_model_is_calibrated": true,
+    "brier_skill_score": -0.32693689987888286,
+    "risk_distribution": {
+      "low": 49,
+      "moderate": 25,
+      "high": 0
+    }
+  },
+  "calibration_curve": {
+    "points": [
+      {
+        "mean_predicted_probability": 0.11688216515732706,
+        "observed_event_fraction": 0.3333333333333333
+      },
+      {
+        "mean_predicted_probability": 0.19676712486211306,
+        "observed_event_fraction": 0.8
+      },
+      {
+        "mean_predicted_probability": 0.2987879213647715,
+        "observed_event_fraction": 0.6428571428571429
+      },
+      {
+        "mean_predicted_probability": 0.3974391120554924,
+        "observed_event_fraction": 0.4666666666666667
+      },
+      {
+        "mean_predicted_probability": 0.5645161798834347,
+        "observed_event_fraction": 0.8
+      }
+    ],
+    "unavailable_reason": null
+  },
+  "class_distribution": {
+    "train": {
+      "negative": 184,
+      "positive": 254
+    },
+    "calibration": {
+      "negative": 48,
+      "positive": 61
+    },
+    "validation": {
+      "negative": 79,
+      "positive": 30
+    },
+    "test": {
+      "negative": 29,
+      "positive": 45
+    }
+  },
+  "global_feature_importance": {
+    "vessel_density": 0.627284795978676,
+    "month": 0.1855871341719475,
+    "anchorage_vessels": 0.06551935894082297,
+    "day_of_week": 0.06179924671766945,
+    "anchorage_dwell_hours": 0.059809464190883996
+  },
+  "feature_importance_warning": "Importance indicates model association, not causation.",
+  "data_quality": {
+    "input_rows": 74217,
+    "original_columns": [
+      "MMSI",
+      "BaseDateTime",
+      "LAT",
+      "LON",
+      "SOG",
+      "VesselArrivalTime",
+      "PortName",
+      "PortCapacity_Berths",
+      "VesselArrivals_Daily",
+      "QueueLength_Vessels",
+      "WeatherCondition",
+      "WindSpeed_kmh",
+      "HistoricalDelayMinutes",
+      "SyntheticCongestionLabel",
+      "SyntheticDelayMinutes",
+      "SyntheticDelayLabel",
+      "SyntheticData"
+    ],
+    "missing_columns": [],
+    "missingness": {
+      "MMSI": 0,
+      "BaseDateTime": 0,
+      "LAT": 0,
+      "LON": 0,
+      "SOG": 0,
+      "VesselArrivalTime": 0,
+      "PortName": 0,
+      "PortCapacity_Berths": 0,
+      "VesselArrivals_Daily": 0,
+      "QueueLength_Vessels": 0,
+      "WeatherCondition": 0,
+      "WindSpeed_kmh": 0,
+      "HistoricalDelayMinutes": 0,
+      "SyntheticCongestionLabel": 0,
+      "SyntheticDelayMinutes": 0,
+      "SyntheticDelayLabel": 0,
+      "SyntheticData": 0
+    },
+    "duplicate_messages": 0,
+    "invalid_timestamps": 0,
+    "invalid_coordinates": 0,
+    "errors": [],
+    "target_status": "provided",
+    "target_source": "SyntheticCongestionLabel column in the source dataset; aggregated by UTC day using max value.",
+    "target_definition": "The uploaded synthetic congestion label is used as the binary target when it is supplied and valid.",
+    "provided_target_columns_used": [
+      "SyntheticCongestionLabel"
+    ],
+    "provided_target_columns_ignored": [],
+    "candidate_anchorage_days": 707,
+    "dwell_measurement_days": 707,
+    "anchorage_days_without_sufficient_observations": 0,
+    "dwell_coverage": {
+      "start": "2023-01-02",
+      "end": "2024-12-31"
+    },
+    "congestion_label_distribution": {
+      "not_congested": 340,
+      "congested": 390
+    },
+    "valid_rows_before_region_filter": 74217,
+    "duplicate_rows_removed": 0,
+    "rows_after_region_filter": 74217,
+    "rows_removed_as_missing_or_invalid": 0,
+    "region": {
+      "lat_min": 33.6,
+      "lat_max": 34.2,
+      "lon_min": -118.6,
+      "lon_max": -118.0
+    },
+    "candidate_anchorage_rule": "33.68-33.82 N, -118.49 to -118.31 W, SOG 0-0.5 knots",
+    "label_threshold_vessels": 25,
+    "label_definition": "Next UTC day has at least 25 distinct MMSIs observed in the candidate-anchorage geofence.",
+    "missing_dwell_policy": "Dwell is unavailable when no qualifying vessel has at least two qualifying observations that day; it is not filled with zero.",
+    "processed_rows": 730,
+    "positive_labels": 390,
+    "negative_labels": 340,
+    "synthetic_congestion_label_distribution": {
+      "not_congested": 340,
+      "congested": 390,
+      "unlabeled": 0
+    },
+    "observation_start": "2023-01-02",
+    "observation_end": "2024-12-31",
+    "shipment_delay_definition": "SyntheticDelayLabel aggregated by UTC target day using max; the model uses the preceding UTC day's operational inputs. No labels are derived from delay minutes.",
+    "delay_target_status": "provided",
+    "delay_target_source": "SyntheticDelayLabel in the source dataset, aggregated by UTC day using max.",
+    "delay_target_distribution": {
+      "not_delayed": 277,
+      "delayed": 453
+    },
+    "source_dataset_sha256": "f43b114db13970283d41c1de13bbf2a655b4208f1525dddc6a76119f0039cd1d",
+    "processed_at": "2026-10-22T04:34:24.031332+00:00"
+  },
+  "trained_at": "2026-10-22T04:37:11.429262+00:00"
+}
